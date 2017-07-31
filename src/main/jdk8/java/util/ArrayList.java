@@ -219,7 +219,7 @@ public class ArrayList<E> extends AbstractList<E>
         }
     }
 
-    private void ensureCapacityInternal(int minCapacity) {
+    private void ensureCapacityInternal(int minCapacity) {  //保证元素数量
         if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
             minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);
         }
@@ -232,7 +232,7 @@ public class ArrayList<E> extends AbstractList<E>
 
         // overflow-conscious code
         if (minCapacity - elementData.length > 0)
-            grow(minCapacity);
+            grow(minCapacity);  //扩容
     }
 
     /**
@@ -249,7 +249,7 @@ public class ArrayList<E> extends AbstractList<E>
      *
      * @param minCapacity the desired minimum capacity
      */
-    private void grow(int minCapacity) {
+    private void grow(int minCapacity) {    //扩容，当前容量的1.5倍进行扩容
         // overflow-conscious code
         int oldCapacity = elementData.length;
         int newCapacity = oldCapacity + (oldCapacity >> 1);
@@ -307,7 +307,7 @@ public class ArrayList<E> extends AbstractList<E>
      * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
      * or -1 if there is no such index.
      */
-    public int indexOf(Object o) {
+    public int indexOf(Object o) {  //遍历寻找
         if (o == null) {
             for (int i = 0; i < size; i++)
                 if (elementData[i]==null)
@@ -372,7 +372,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return an array containing all of the elements in this list in
      *         proper sequence
      */
-    public Object[] toArray() {
+    public Object[] toArray() {     //toArray返回的是一个深度复制后的数组
         return Arrays.copyOf(elementData, size);
     }
 
@@ -520,7 +520,7 @@ public class ArrayList<E> extends AbstractList<E>
         if (o == null) {
             for (int index = 0; index < size; index++)
                 if (elementData[index] == null) {
-                    fastRemove(index);
+                    fastRemove(index);      //利用fastRemove进行操作，减少边界检查，并且不返回原值
                     return true;
                 }
         } else {
@@ -537,7 +537,7 @@ public class ArrayList<E> extends AbstractList<E>
      * Private remove method that skips bounds checking and does not
      * return the value removed.
      */
-    private void fastRemove(int index) {
+    private void fastRemove(int index) {        //不进行边界检测
         modCount++;
         int numMoved = size - index - 1;
         if (numMoved > 0)
@@ -748,9 +748,9 @@ public class ArrayList<E> extends AbstractList<E>
      *             instance is emitted (int), followed by all of its elements
      *             (each an <tt>Object</tt>) in the proper order.
      */
-    private void writeObject(java.io.ObjectOutputStream s)
+    private void writeObject(java.io.ObjectOutputStream s)      
         throws java.io.IOException{
-        // Write out element count, and any hidden stuff
+        // Write out element count, and any hidden stuff    //注意写的格式
         int expectedModCount = modCount;
         s.defaultWriteObject();
 
@@ -992,7 +992,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      * @throws IllegalArgumentException {@inheritDoc}
      */
-    public List<E> subList(int fromIndex, int toIndex) {
+    public List<E> subList(int fromIndex, int toIndex) {    //subList返回的是原List的引用
         subListRangeCheck(fromIndex, toIndex, size);
         return new SubList(this, 0, fromIndex, toIndex);
     }
