@@ -153,8 +153,8 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * normal use are not overpopulated, checking for existence of
      * tree bins may be delayed in the course of table methods.
      *
-     * Tree bins (i.e., bins whose elements are all TreeNodes) are
-     * ordered primarily by hashCode, but in the case of ties, if two
+     * Tree bins (i.e., bins whose elements are all TreeNodes) are   //默认是按hashCode进行排序
+     * ordered primarily by hashCode, but in the case of ties, if two  
      * elements are of the same "class C implements Comparable<C>",
      * type then their compareTo method is used for ordering. (We
      * conservatively check generic types via reflection to validate
