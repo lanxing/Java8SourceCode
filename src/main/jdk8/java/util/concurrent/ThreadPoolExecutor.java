@@ -1013,29 +1013,37 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * @param completedAbruptly if the worker died due to user exception
      */
     private void processWorkerExit(Worker w, boolean completedAbruptly) {
-        if (completedAbruptly) // If abrupt, then workerCount wasn't adjusted
+        if (completedAbruptly) // 如果线程时异常退出，需要将线程数减一，正常线程数递减是在getTask()中进行的
             decrementWorkerCount();
 
         final ReentrantLock mainLock = this.mainLock;
         mainLock.lock();
         try {
             completedTaskCount += w.completedTasks;
-            workers.remove(w);
+            workers.remove(w);  //移除线程
         } finally {
             mainLock.unlock();
         }
 
-        tryTerminate();
+        tryTerminate();     //尝试中断线程池，在执行过程中shutDown()或者shutDownNow()可能被调用
 
         int c = ctl.get();
+
+        //线程处于RUNNINg和SHUTDOWN状态时，需要进一步处理线程
         if (runStateLessThan(c, STOP)) {
+
+            //线程正常结束
             if (!completedAbruptly) {
+                //如果允许核心线程回收，那么min就位0，否则为核心线程数
                 int min = allowCoreThreadTimeOut ? 0 : corePoolSize;
                 if (min == 0 && ! workQueue.isEmpty())
                     min = 1;
+                //当前线程池线程数大于min则没有什么问题
                 if (workerCountOf(c) >= min)
                     return; // replacement not needed
             }
+            //线程异常结束,需要回补该异常结束的线程
+            //线程数为0但线程池处于SHUTDOWN状态，则需要创建一个线程执行任务队列中的任务
             addWorker(null, false);
         }
     }
@@ -1074,10 +1082,11 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
 
             int wc = workerCountOf(c);
 
-            // timed表示是否需要回收该线程，如果allowCoreThreadTimeOut设置了无论当前线程数
+            // timed表示是否需要回收该线程，如果allowCoreThreadTimeOut设置为true则无论当前线程数
             // 设置多少都需要回收，否则只有当线程池中线程数大于corePoolSize时才需要回收
             boolean timed = allowCoreThreadTimeOut || wc > corePoolSize;
 
+            //需要回收线程时，则将线程数减一，并返回null，在runWorker中回收线程
             if ((wc > maximumPoolSize || (timed && timedOut))
                 && (wc > 1 || workQueue.isEmpty())) {
                 if (compareAndDecrementWorkerCount(c))
@@ -1088,8 +1097,8 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
             try {
 
                 //1：如果timed为true，该线程需要回收，通过将workQueue.poll的超时时间设置为
-                // keepAliveTime来保证返回的r是否为空
-                // 2：timed为false，则阻塞获取workQueue
+                // keepAliveTime来保证返回的task是否为空，从而来判断该线程是否需要回收
+                // 2：timed为false，则阻塞获取workQueue，直到线程中断或者获取到任务
                 Runnable r = timed ?
                     workQueue.poll(keepAliveTime, TimeUnit.NANOSECONDS) :
                     workQueue.take();
@@ -1147,10 +1156,10 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      */
     final void runWorker(Worker w) {
         Thread wt = Thread.currentThread();
-        Runnable task = w.firstTask;
+        Runnable task = w.firstTask;    //先执行初始化时的任务
         w.firstTask = null;
         w.unlock(); // allow interrupts
-        boolean completedAbruptly = true;
+        boolean completedAbruptly = true;   //主要用来判断线程是正常结束还是异常结束，true为异常结束，在processWorkerExit中有所体现
         try {
             while (task != null || (task = getTask()) != null) {
                 w.lock();

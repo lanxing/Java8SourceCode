@@ -192,6 +192,12 @@ public class ScheduledThreadPoolExecutor
          * indicates fixed-delay execution.  A value of 0 indicates a
          * non-repeating task.
          */
+
+        /**
+         * >0 固定频率执行
+         * =0 不重复执行
+         * <0 按固定延迟执行
+         */
         private final long period;
 
         /** The actual task to be re-enqueued by reExecutePeriodic */
